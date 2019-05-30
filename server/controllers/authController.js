@@ -38,5 +38,28 @@ module.exports = {
         } else {
             return res.status(401).send(`Incorrect username or password`)
         }
+    },
+    // Keep this functionality separate so that this isn't dependent on another controller working as well, even though this could be done theoretically with just the login functionality
+    getDetails: async (req, res) => {
+        const db = req.app.get('db')
+        const {session} = req
+        if(session.user){
+            const details = await db.get_user_details({id: session.user.id})
+            const {firstname, email, balance, user_id} = details[0]
+            return res.status(200).send({firstname, email, balance, user_id, username: session.user.username})
+        }
+        return res.status(401).send(`Please Log In`)
+    },
+    getUser: (req, res) => {
+        const {session} = req
+        if(session.user){
+            return res.status(200).send(session.user)
+        } else {
+            return res.status(401).send('Please Log In')
+        }
+    },
+    logout: (req, res) => {
+        req.session.destroy()
+        res.sendStatus(200)
     }
 }
